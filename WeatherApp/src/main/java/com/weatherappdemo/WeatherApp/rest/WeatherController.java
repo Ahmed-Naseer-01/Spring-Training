@@ -1,11 +1,12 @@
 package com.weatherappdemo.WeatherApp.rest;
 
 import com.weatherappdemo.WeatherApp.entity.Weather;
+import com.weatherappdemo.WeatherApp.exception.WeatherErrorResponse;
+import com.weatherappdemo.WeatherApp.exception.WeatherNotFoundException;
 import jakarta.annotation.PostConstruct;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -41,6 +42,33 @@ public class WeatherController {
                 return weather;
             }
         }
-    return null;
+        throw new WeatherNotFoundException("Weather not found for city : " + city);
     }
+    // here we'll Exception handler
+    //     this is the type of response body                    Exception type to handle
+    @ExceptionHandler
+    public ResponseEntity<WeatherErrorResponse> handleException(WeatherNotFoundException ex) {
+
+        // create a weatherErrorResponse
+        WeatherErrorResponse errorResponse = new WeatherErrorResponse();
+        errorResponse.setStatus(HttpStatus.NOT_FOUND.value());
+        errorResponse.setMessage(ex.getMessage());
+        errorResponse.setTimestamp(System.currentTimeMillis());
+
+
+        return new ResponseEntity<>(errorResponse, HttpStatus.NOT_FOUND) ;
+    }
+    @ExceptionHandler
+    public ResponseEntity<WeatherErrorResponse> handleException(Exception ex) {
+
+        // create a weatherErrorResponse
+        WeatherErrorResponse errorResponse = new WeatherErrorResponse();
+        errorResponse.setStatus(HttpStatus.BAD_REQUEST.value());
+        errorResponse.setMessage(ex.getMessage());
+        errorResponse.setTimestamp(System.currentTimeMillis());
+
+
+        return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST) ;
+    }
+
 }
