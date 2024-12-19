@@ -2,46 +2,49 @@ package com.example.employee_management.controller;
 
 import com.example.employee_management.entity.Employee;
 import com.example.employee_management.repository.EmployeeDao;
+import com.example.employee_management.service.EmployeeServiceDaoImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
+import java.util.*;
 
 @RestController
-@RequestMapping("/api")
+@RequestMapping("/employees")
 public class EmployeeController {
 
     @Autowired
-    private EmployeeDao employeeDao;
+    private EmployeeServiceDaoImpl employeeServiceDaoImpl;
 
-    @PostMapping("/addEmployee")
+    @PostMapping("/add")
     public String addEmployee(@RequestBody Employee employee) {
-        boolean isSuccess = employeeDao.insertEmployee(employee);
+        boolean isSuccess = employeeServiceDaoImpl.add(employee);
         return isSuccess ? "Employee added successfully" : "Failed to add employee";
     }
 
 
-    @DeleteMapping("/deleteEmployee/{id}")
+    @DeleteMapping("/delete/{id}")
     public String deleteEmployee(@PathVariable int id) {
-        boolean isSuccess = employeeDao.deleteEmployeeById(id);
+        boolean isSuccess = employeeServiceDaoImpl.delete(id);
         return isSuccess ? "Employee deleted successfully" : "Failed to delete employee";
     }
 
-    @GetMapping("/findEmployee/{id}")
+    @GetMapping("/find/{id}")
     public ResponseEntity<Employee> getEmployeeById(@PathVariable("id") int id) {
-        try {
-            Employee employee = employeeDao.findEmployeeById(id);
-            return new ResponseEntity<>(employee, HttpStatus.OK);
-        } catch (EmptyResultDataAccessException e) {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND); // Employee not found
+        Optional<Employee> employeeOptional = employeeServiceDaoImpl.getById(id);
+
+        if (employeeOptional.isPresent()) {
+            return new ResponseEntity<>(employeeOptional.get(), HttpStatus.OK);
+        } else {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
     }
 
-    @GetMapping("/employees")
+
+    @GetMapping
     public List<Employee> getAllEmployees() {
-        return employeeDao.getAllEmployees();
+        return employeeServiceDaoImpl.getAll();
     }
 }
