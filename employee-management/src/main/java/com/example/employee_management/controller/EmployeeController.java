@@ -24,6 +24,14 @@ public class EmployeeController {
         return isSuccess ? "Employee added successfully" : "Failed to add employee";
     }
 
+    @PutMapping("/update/{id}")
+    public String updateEmployee(@PathVariable int id, @RequestBody Employee employee) {
+       employeeServiceDaoImpl.update(id, employee);
+       return "Employee updated successfully";
+
+    }
+
+
 
     @DeleteMapping("/delete/{id}")
     public String deleteEmployee(@PathVariable int id) {

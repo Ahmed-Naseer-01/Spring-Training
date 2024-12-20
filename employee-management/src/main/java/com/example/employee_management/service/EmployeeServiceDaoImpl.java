@@ -42,7 +42,8 @@ public class EmployeeServiceDaoImpl implements ServiceDAO<Employee> {
     }
 
     @Override
-    public void update(Employee employee) {
+    public void update(int id, Employee employee) {
+        employeeDao.update(id, employee);
 
     }
 }
