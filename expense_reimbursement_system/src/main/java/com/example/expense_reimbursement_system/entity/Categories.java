@@ -2,6 +2,8 @@ package com.example.expense_reimbursement_system.entity;
 
 import jakarta.persistence.*;
 
+import java.util.List;
+
 
 @Entity
 public class Categories {
@@ -10,6 +12,9 @@ public class Categories {
     private Long id;
     private String name;
     private boolean status;
+    @OneToMany(mappedBy = "category", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<Expense> expenses;
+
 
     public Categories() {}
 
@@ -33,6 +38,13 @@ public class Categories {
         return name;
     }
 
+    public List<Expense> getExpenses() {
+        return expenses;
+    }
+
+    public void setExpenses(List<Expense> expenses) {
+        this.expenses = expenses;
+    }
     public boolean isStatus() {
         return status;
     }

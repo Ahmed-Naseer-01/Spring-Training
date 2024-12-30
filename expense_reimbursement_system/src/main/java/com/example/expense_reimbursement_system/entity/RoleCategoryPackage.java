@@ -3,7 +3,6 @@ package com.example.expense_reimbursement_system.entity;
 import jakarta.persistence.*;
 
 @Entity
-@Table(name = "RoleCategoryPackage")
 public class RoleCategoryPackage {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
