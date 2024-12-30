@@ -1,6 +1,7 @@
 package com.example.employee_management.entity;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.*;
 
 @Entity
 public class Contact {
@@ -8,7 +9,9 @@ public class Contact {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
+    @Pattern(regexp = "^(?:\\+92|0092)?(03[0-5]{2})-?[0-9]{7}$|^(?:\\+92|0092)?([0-9]{3})-?[0-9]{7}$", message = "Only Pak Phone Number allowed")
     String phoneNumber;
+    @Email(message = "Invalid email format")
     String email;
 
     @ManyToOne

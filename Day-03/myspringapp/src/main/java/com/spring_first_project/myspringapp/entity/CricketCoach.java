@@ -13,12 +13,12 @@ public class CricketCoach implements Coach {
     public String getDailyWorkout() {
         return "Practical cricket workout";
     }
-    @PostConstruct
-    public void doMyStartupStuff() {
-        System.out.println("Cricket Coach doMyStartupStuff called");
-    }
-    @PreDestroy
-    public void myEndUpStuff() {
-        System.out.println("Cricket Coach myEndUpStuff called");
-}
+//    @PostConstruct
+//    public void doMyStartupStuff() {
+//        System.out.println("Cricket Coach doMyStartupStuff called");
+//    }
+//    @PreDestroy
+//    public void myEndUpStuff() {
+//        System.out.println("Cricket Coach myEndUpStuff called");
+//}
 }

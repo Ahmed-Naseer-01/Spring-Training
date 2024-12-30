@@ -12,7 +12,7 @@ public class CoachController {
 
      private final Coach newcoach;
     @Autowired
-     public CoachController(@Qualifier("cricketCoach")Coach theNewcoach) {
+     public CoachController(@Qualifier("swimCoach")Coach theNewcoach) {
         this.newcoach = theNewcoach;
         System.out.println("coachController called " + this.getClass().getName());
     }
