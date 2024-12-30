@@ -3,6 +3,7 @@ package com.example.employee_management.controller;
 import com.example.employee_management.entity.Employee;
 import com.example.employee_management.repository.EmployeeDao;
 import com.example.employee_management.service.EmployeeServiceDaoImpl;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.http.HttpStatus;
@@ -19,7 +20,7 @@ public class EmployeeController {
     private EmployeeServiceDaoImpl employeeServiceDaoImpl;
 
     @PostMapping("/add")
-    public String addEmployee(@RequestBody Employee employee) {
+    public String addEmployee(@Valid @RequestBody Employee employee) {
         boolean isSuccess = employeeServiceDaoImpl.add(employee);
         return isSuccess ? "Employee added successfully" : "Failed to add employee";
     }
