@@ -1,6 +1,8 @@
 package com.example.expense_reimbursement_system.repository;
 
 
+import com.example.expense_reimbursement_system.entity.Categories;
+import com.example.expense_reimbursement_system.entity.Employee;
 import com.example.expense_reimbursement_system.entity.Expense;
 import org.springframework.data.jpa.repository.*;
 import org.springframework.data.repository.query.Param;
@@ -11,6 +13,9 @@ import java.util.List;
 
 @Repository
 public interface ExpenseRepository extends JpaRepository<Expense, Integer> {
+
+    @Query("SELECT COALESCE(SUM(e.amount), 0) FROM Expense e WHERE e.employee = :employee AND e.category = :category AND e.status.name = 'Approved'")
+    int findTotalApprovedExpensesByEmployeeAndCategory(@Param("employee") Employee employee, @Param("category") Categories category);
 
     // Get status by it's name(status)
     List<Expense> findByStatus_Name(String statusName);
