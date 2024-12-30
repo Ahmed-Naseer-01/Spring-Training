@@ -1,4 +1,5 @@
 package com.example.expense_reimbursement_system.entity;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 
 import java.util.Date;
@@ -16,12 +17,16 @@ public class Expense {
 
     @ManyToOne
     @JoinColumn(name = "employee_id")
+    @JsonIgnore
     private Employee employee;
 
-    @OneToOne
+    @ManyToOne
+    @JoinColumn(name = "category_id")
+    @JsonIgnore
     private Categories category;
 
     @OneToOne
+    @JoinColumn(name = "expense_status_id")
     private ExpenseStatus status;
 
     public Expense(){ }
