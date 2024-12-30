@@ -12,7 +12,18 @@ public class Role {
     private String name;
     private boolean status = true;
 
+
+    @OneToOne(mappedBy = "role")
+    private Employee employee;
+
     public Role() {}
+
+    public Employee getEmployee() {
+        return employee;
+    }
+    public void setEmployee(Employee employee) {
+        this.employee = employee;
+    }
 
     public int getId() {
         return id;
