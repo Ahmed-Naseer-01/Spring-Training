@@ -15,10 +15,8 @@ public class Employee {
     @OneToOne
     private Role role;
 
-    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    @JoinColumn(name = "employee_id")
+    @OneToMany(mappedBy = "employee", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<Expense> expenses;
-
     // Getters and setters
     public int getId() {
         return id;
