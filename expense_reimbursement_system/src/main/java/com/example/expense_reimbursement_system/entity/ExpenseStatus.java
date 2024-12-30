@@ -10,6 +10,9 @@ public class ExpenseStatus {
     private String name;
     private boolean status;
 
+    @OneToOne(mappedBy = "status", cascade = CascadeType.ALL)
+    private Expense expense;
+
     public ExpenseStatus() {}
 
     public void setId(Long id) {
