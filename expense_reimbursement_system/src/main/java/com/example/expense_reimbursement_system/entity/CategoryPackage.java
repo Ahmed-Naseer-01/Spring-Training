@@ -7,7 +7,7 @@ import jakarta.persistence.*;
 public class CategoryPackage {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private int id;
 
     @ManyToOne
     @JoinColumn(name = "category_id", nullable = false)
@@ -22,11 +22,11 @@ public class CategoryPackage {
     // default constructor
     public CategoryPackage() {}
 
-    public Long getId() {
+    public int getId() {
         return id;
     }
 
-    public void setId(Long id) {
+    public void setId(int id) {
         this.id = id;
     }
 
