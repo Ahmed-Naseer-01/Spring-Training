@@ -3,27 +3,19 @@ package com.example.expense_reimbursement_system.entity;
 
 import jakarta.persistence.*;
 
+
 @Entity
 public class Role {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
+    @Column(nullable = false, unique = true)
     private String name;
-    private boolean status = true;
-
-
-    @OneToOne(mappedBy = "role")
-    private Employee employee;
+    @Column(nullable = false)
+    private boolean status;
 
     public Role() {}
-
-    public Employee getEmployee() {
-        return employee;
-    }
-    public void setEmployee(Employee employee) {
-        this.employee = employee;
-    }
 
     public int getId() {
         return id;
