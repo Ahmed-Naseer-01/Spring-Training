@@ -6,16 +6,15 @@ import jakarta.persistence.*;
 public class ExpenseStatus {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private int id;
+    @Column(nullable = false, unique = true)
     private String name;
+    @Column(nullable = false)
     private boolean status;
-
-    @OneToOne(mappedBy = "status", cascade = CascadeType.ALL)
-    private Expense expense;
 
     public ExpenseStatus() {}
 
-    public void setId(Long id) {
+    public void setId(int id) {
         this.id = id;
     }
 
@@ -27,7 +26,7 @@ public class ExpenseStatus {
         this.status = status;
     }
 
-    public Long getId() {
+    public int getId() {
         return id;
     }
 
