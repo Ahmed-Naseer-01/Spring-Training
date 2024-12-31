@@ -3,16 +3,20 @@ package com.example.expense_reimbursement_system.entity;
 import jakarta.persistence.*;
 import java.util.List;
 
+
 @Entity
+
 public class Employee {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
+    @Column(nullable = false)
     private String name;
     private String email;
 
-    @OneToOne
+    @ManyToOne
+    @JoinColumn(name = "role_id")
     private Role role;
 
     @OneToMany(mappedBy = "employee", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
