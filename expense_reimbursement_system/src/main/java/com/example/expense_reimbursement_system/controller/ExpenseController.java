@@ -34,13 +34,13 @@ public class ExpenseController {
     }
 
     // GET: Get Expenses by Status
-    @GetMapping("/status/{statusName}")
-    public ResponseEntity<?> getExpensesByStatus(@PathVariable String statusName) {
+    @GetMapping("/status/{statusId}")
+    public ResponseEntity<?> getExpensesByStatus(@PathVariable int statusId) {
         try {
-            List<Expense> expenses = expenseService.getExpensesByStatus(statusName);
+            List<Expense> expenses = expenseService.getExpensesByStatus(statusId);
             if (expenses.isEmpty()) {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                        .body("No expenses found for status: " + statusName);
+                        .body("No expenses found for status id: " + statusId);
             }
             return ResponseEntity.ok(expenses);
         } catch (Exception e) {
@@ -54,9 +54,9 @@ public class ExpenseController {
     public ResponseEntity<String> updateExpenseStatus(@RequestBody Map<String, Object> payload) {
         try {
             int expenseId = (int) payload.get("expenseId");
-            String name = (String) payload.get("name");
+            int statusId = (int) payload.get("statusId");
 
-            expenseService.updateExpenseStatusByExpenseId(expenseId, name);
+            expenseService.updateExpenseStatusByExpenseId(expenseId, statusId);
             return ResponseEntity.ok("Expense status updated successfully.");
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
