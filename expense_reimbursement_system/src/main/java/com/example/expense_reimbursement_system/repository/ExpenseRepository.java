@@ -17,8 +17,8 @@ public interface ExpenseRepository extends JpaRepository<Expense, Integer> {
     @Query("SELECT COALESCE(SUM(e.amount), 0) FROM Expense e WHERE e.employee = :employee AND e.category = :category AND e.status.name = 'Approved'")
     int findTotalApprovedExpensesByEmployeeAndCategory(@Param("employee") Employee employee, @Param("category") Categories category);
 
-    // Get status by it's name(status)
-    List<Expense> findByStatus_Name(String statusName);
+    // Get expense by it's status
+    List<Expense> findByStatus_id(int id);
 
     // Get Expenses by Employee or by Date Range
     @Query("SELECT e FROM Expense e WHERE e.employee.id = :employeeId AND e.submitDate BETWEEN :start AND :end")
