@@ -2,6 +2,7 @@ package com.example.expense_reimbursement_system.entity;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 
+import java.time.LocalDateTime;
 import java.util.Date;
 
 @Entity
@@ -10,10 +11,12 @@ public class Expense {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
+    @Column(nullable = false)
     private int amount;
+    @Column(nullable = false)
     private String description;
-    private Date submitDate;
-    private Date approvalDate;
+    private LocalDateTime submitDate;
+    private LocalDateTime approvalDate;
 
     @ManyToOne
     @JoinColumn(name = "employee_id")
@@ -25,7 +28,7 @@ public class Expense {
     @JsonIgnore
     private Categories category;
 
-    @OneToOne
+    @ManyToOne
     @JoinColumn(name = "expense_status_id")
     private ExpenseStatus status;
 
@@ -54,19 +57,19 @@ public class Expense {
         this.description = description;
     }
 
-    public Date getSubmitDate() {
+    public LocalDateTime getSubmitDate() {
         return submitDate;
     }
 
-    public void setSubmitDate(Date submitDate) {
+    public void setSubmitDate(LocalDateTime submitDate) {
         this.submitDate = submitDate;
     }
 
-    public Date getApprovalDate() {
+    public LocalDateTime getApprovalDate() {
         return approvalDate;
     }
 
-    public void setApprovalDate(Date approvalDate) {
+    public void setApprovalDate(LocalDateTime approvalDate) {
         this.approvalDate = approvalDate;
     }
 
