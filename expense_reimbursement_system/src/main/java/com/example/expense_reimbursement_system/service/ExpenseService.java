@@ -3,6 +3,7 @@ package com.example.expense_reimbursement_system.service;
 
 import com.example.expense_reimbursement_system.entity.*;
 import com.example.expense_reimbursement_system.repository.*;
+import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -17,9 +18,9 @@ public class ExpenseService {
     @Autowired
     private  ExpenseRepository expenseRepository;
     @Autowired
-    private  EmployeeRepository employeeRepository;
+    private CategoriesRepository categoriesRepository;
     @Autowired
-    private  CategoriesRepository categoriesRepository;
+    private  EmployeeRepository employeeRepository;
     @Autowired
     private  ExpenseStatusRepository expenseStatusRepository;
     @Autowired
@@ -51,35 +52,48 @@ private RoleCategoryPackage getRoleCategoryPackageForEmployee(int employeeId) {
     // create Employee expense request ticket
     public Expense createExpense(int employeeId, Expense expense) {
 
-
         // Fetch the employee from the repository using the employeeId
         Employee employee = employeeRepository.findById(employeeId)
                 .orElseThrow(() -> new RuntimeException("Employee not found with ID: " + employeeId));
 
-        if (isValidateAmount(employeeId, expense.getAmount())) {
-            // Set the submit date
-            expense.setSubmitDate(new Date());
-            // Set approved date to null by default
-            expense.setApprovalDate(null);
-            // Set the employee in the expense
-            expense.setEmployee(employee);
+        // Set the submit date
+        expense.setSubmitDate(LocalDateTime.now());
+        // Set approved date to null by default
+        expense.setApprovalDate(null);
+        // Set the employee in the expense
+        expense.setEmployee(employee);
 
-            ExpenseStatus status = new ExpenseStatus();
-            status.setName("Pending"); // Default status
-            status.setStatus(true); // default active flag
-            status = expenseStatusRepository.save(status);
-            // Link the saved status to the expense
+        Categories category = categoriesRepository.findById(expense.getCategory().getId())
+                .orElseThrow(() -> new EntityNotFoundException("Category not found with ID: " + expense.getCategory().getId()));
+
+        expense.setCategory(category);
+
+        // validate request amount
+        if (isValidateAmount(employeeId, expense.getAmount()) && validateExpense(expense.getId())) {
+            ExpenseStatus status = expenseStatusRepository.findById(1)
+                    .orElseThrow(() -> new EntityNotFoundException("Expense Status not found with ID: 1"));
+
             expense.setStatus(status);
             // Save and return the expense
             return expenseRepository.save(expense);
         }
-        throw new IllegalArgumentException("Invalid expense data.");
+        else {
+            ExpenseStatus status = expenseStatusRepository.findById(3)
+                    .orElseThrow(() -> new EntityNotFoundException("Expense Status not found with ID: 3"));
+            // save expense with rejected status
+            expense.setStatus(status);
+            // save the expense in the db
+            expenseRepository.save(expense);
+            throw new IllegalArgumentException("Invalid Claim Amount");
+        }
     }
 
     // Get expenses by status
-    public List<Expense> getExpensesByStatus(String statusName) {
-        return expenseRepository.findByStatus_Name(statusName);
+    public List<Expense> getExpensesByStatus(int statusId) {
+        return expenseRepository.findByStatus_id(statusId);
     }
+
+
 
 
     public boolean isValidateAmount(int employeeId, int amount) {
@@ -119,26 +133,18 @@ private RoleCategoryPackage getRoleCategoryPackageForEmployee(int employeeId) {
         return expense.getAmount() <= remainingAmount;
     }
 
-    public void updateExpenseStatusByExpenseId(int expenseId, String name) {
-
-        if (validateExpense(expenseId)) {
+    public void updateExpenseStatusByExpenseId(int expenseId, int statusId) {
             // get the expense by its Id
             Expense expense = expenseRepository.findById(expenseId)
                     .orElseThrow(() -> new IllegalArgumentException("Expense not found with ID: " + expenseId));
-            // Get the associated status
-            ExpenseStatus expenseStatus = expense.getStatus();
-
-            if (name != null && !name.isEmpty()) {
-                // Update the status name
-                expenseStatus.setName(name);
-                expenseStatusRepository.save(expenseStatus);
-            }
+            // get expense status by it's id
+            ExpenseStatus status = expenseStatusRepository.findById(statusId)
+                    .orElseThrow(() -> new EntityNotFoundException("Expense Status not found with ID: 1"));
+            // Set status
+            expense.setStatus(status);
             // Update the approval date if needed
-            expense.setApprovalDate(new Date());
+            expense.setApprovalDate(LocalDateTime.now());
             expenseRepository.save(expense);
-        } else {
-            throw new RuntimeException("Expense " + expenseId + " can not be updated");
-        }
     }
 
     // Get expenses by employee within a date range
@@ -158,4 +164,16 @@ private RoleCategoryPackage getRoleCategoryPackageForEmployee(int employeeId) {
                 })
                 .toList();
     }
-}
+
+
+    // validate expense limit by using
+    public boolean validateExpenseLimit(int roleId, int categoryPackageId, int expenseAmount) {
+        Optional<RoleCategoryPackage> roleCategoryPackage = roleCategoryPackageRepository.findById(categoryPackageId);
+        if (roleCategoryPackage.isPresent() &&
+                roleCategoryPackage.get().getRole().getId() == roleId) {
+            return expenseAmount <= roleCategoryPackage.get().getCategoryPackage().getExpenseLimit();
+        }
+        return false;
+    }
+
+    }
