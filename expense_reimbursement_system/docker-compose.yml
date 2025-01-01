@@ -1,0 +1,26 @@
+version: '3.8'
+services:
+  app:
+    build: .
+    ports:
+      - "6464:6464"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://db:3306/expense_reimbursement_system
+      SPRING_DATASOURCE_USERNAME: root  # You can use any valid username created in the db container
+      SPRING_DATASOURCE_PASSWORD: 123ahmed
+    depends_on:
+      - db
+
+  db:
+    image: mysql:8.0
+    container_name: mysql-db
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_DATABASE: expense_reimbursement_system
+      MYSQL_ROOT_PASSWORD: 123ahmed  # The root password for the MySQL server
+    volumes:
+      - mysql-data:/var/lib/mysql  # Optional: persists data
+
+volumes:
+  mysql-data:
