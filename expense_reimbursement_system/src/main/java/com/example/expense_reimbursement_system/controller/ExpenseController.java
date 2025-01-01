@@ -25,7 +25,7 @@ public class ExpenseController {
     public ResponseEntity<?> addExpense(@PathVariable int employeeId, @RequestBody Expense expense) {
         try {
             // Call the service method to create the expense
-            Expense createdExpense = expenseService.createExpense(employeeId, expense);
+            ResponseEntity<Expense> createdExpense = expenseService.createExpense(employeeId, expense);
             return ResponseEntity.status(HttpStatus.CREATED).body(createdExpense);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
