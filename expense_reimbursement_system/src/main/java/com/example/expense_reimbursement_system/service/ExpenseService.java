@@ -6,8 +6,9 @@ import com.example.expense_reimbursement_system.repository.*;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import org.springframework.web.servlet.HandlerExceptionResolver;
 
 import java.time.LocalDateTime;
 import java.util.*;
@@ -25,106 +26,75 @@ public class ExpenseService {
     private  ExpenseStatusRepository expenseStatusRepository;
     @Autowired
     private RoleCategoryPackageRepository roleCategoryPackageRepository;
+    @Autowired
+    private CategoryPackageRepository categoryPackageRepository;
 
 
-//    helper function
-private RoleCategoryPackage getRoleCategoryPackageForEmployee(int employeeId) {
+@Transactional
+public ResponseEntity<Expense> createExpense(int employeeId, Expense expense) {
+    // Fetch the employee from the repository using the employeeId
     Employee employee = employeeRepository.findById(employeeId)
             .orElseThrow(() -> new RuntimeException("Employee not found with ID: " + employeeId));
 
-    Role role = employee.getRole();
-    if (role == null) {
-        throw new RuntimeException("Role not found for the employee: " + employee.getId());
+    // Set the submit date
+    expense.setSubmitDate(LocalDateTime.now());
+    // Set approved date to null by default
+    expense.setApprovalDate(null);
+    // Set the employee in the expense
+    expense.setEmployee(employee);
+
+    Categories category = categoriesRepository.findById(expense.getCategory().getId())
+            .orElseThrow(() -> new EntityNotFoundException("Category not found with ID: " + expense.getCategory().getId()));
+
+    expense.setCategory(category);
+
+    // Validate request amount
+    if (isValidateAmount(employee.getRole().getId(), expense) && validateExpense(employeeId, expense)) {
+        // Set status to "Approved"
+        ExpenseStatus status = expenseStatusRepository.findById(1)
+                .orElseThrow(() -> new EntityNotFoundException("Expense Status not found with ID: 1"));
+
+        expense.setStatus(status);
+        // Save and return the expense with "Approved" status
+        Expense savedExpense = expenseRepository.save(expense);
+        return ResponseEntity.status(HttpStatus.CREATED).body(savedExpense); // 201 Created
+    } else {
+        // Set status to "Rejected"
+        ExpenseStatus status = expenseStatusRepository.findById(3)
+                .orElseThrow(() -> new EntityNotFoundException("Expense Status not found with ID: 3"));
+
+        expense.setStatus(status);
+        // Save the expense with Rejected status in the database
+        Expense savedExpense = expenseRepository.save(expense);
+
+        // Return the response with a 400 Bad Request status and the rejected expense details
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(savedExpense); // 400 Bad Request
     }
-
-    RoleCategoryPackage roleCategoryPackage = roleCategoryPackageRepository.findByRole(role)
-            .orElseThrow(() -> new RuntimeException("RoleCategoryPackage not found for role ID: " + role.getId()));
-
-    CategoryPackage categoryPackage = roleCategoryPackage.getCategoryPackage();
-    if (categoryPackage == null) {
-        throw new RuntimeException("CategoryPackage not found for RoleCategoryPackage ID: " + roleCategoryPackage.getId());
-    }
-
-    return roleCategoryPackage;
 }
-
-    @Transactional
-    // create Employee expense request ticket
-    public Expense createExpense(int employeeId, Expense expense) {
-
-        // Fetch the employee from the repository using the employeeId
-        Employee employee = employeeRepository.findById(employeeId)
-                .orElseThrow(() -> new RuntimeException("Employee not found with ID: " + employeeId));
-
-        // Set the submit date
-        expense.setSubmitDate(LocalDateTime.now());
-        // Set approved date to null by default
-        expense.setApprovalDate(null);
-        // Set the employee in the expense
-        expense.setEmployee(employee);
-
-        Categories category = categoriesRepository.findById(expense.getCategory().getId())
-                .orElseThrow(() -> new EntityNotFoundException("Category not found with ID: " + expense.getCategory().getId()));
-
-        expense.setCategory(category);
-
-        // validate request amount
-        if (isValidateAmount(employeeId, expense.getAmount()) && validateExpense(expense.getId())) {
-            ExpenseStatus status = expenseStatusRepository.findById(1)
-                    .orElseThrow(() -> new EntityNotFoundException("Expense Status not found with ID: 1"));
-
-            expense.setStatus(status);
-            // Save and return the expense
-            return expenseRepository.save(expense);
-        }
-        else {
-            ExpenseStatus status = expenseStatusRepository.findById(3)
-                    .orElseThrow(() -> new EntityNotFoundException("Expense Status not found with ID: 3"));
-            // save expense with rejected status
-            expense.setStatus(status);
-            // save the expense in the db
-            expenseRepository.save(expense);
-            throw new IllegalArgumentException("Invalid Claim Amount");
-        }
-    }
-
     // Get expenses by status
     public List<Expense> getExpensesByStatus(int statusId) {
         return expenseRepository.findByStatus_id(statusId);
     }
 
+    public boolean isValidateAmount(int roleId, Expense expense) {
 
+    // Get the expense limit (amount) for the given role and category
+        int maxExpenseLimit = categoryPackageRepository.findExpenseLimitByRoleAndCategory(roleId, expense.getCategory().getId());
 
-
-    public boolean isValidateAmount(int employeeId, int amount) {
-        // Get the RoleCategoryPackage associated with the employee
-        RoleCategoryPackage roleCategoryPackage = getRoleCategoryPackageForEmployee(employeeId);
-
-        // Retrieve the expense limit for the category package
-        int maxExpenseLimit = roleCategoryPackage.getCategoryPackage().getExpenseLimit();
-
-        return amount <= maxExpenseLimit;
+        // Return true if the amount is within the limit
+        return expense.getAmount() <= maxExpenseLimit;
     }
 
-    public boolean validateExpense(int expenseId) {
-        // Fetch the expense by ID
-        Expense expense = expenseRepository.findById(expenseId)
-                .orElseThrow(() -> new RuntimeException("Expense not found with ID: " + expenseId));
+    public boolean validateExpense(int employeeId, Expense expense) {
 
-        // Get the employee who made the expense
-        Employee employee = expense.getEmployee();
-        if (employee == null) {
-            throw new RuntimeException("Employee not found for the expense ID: " + expenseId);
-        }
+        // Fetch the employee from the repository using the employeeId
+        Employee employee = employeeRepository.findById(employeeId)
+                .orElseThrow(() -> new RuntimeException("Employee not found with ID: " + employeeId));
 
-        // Get the RoleCategoryPackage associated with the employee
-        RoleCategoryPackage roleCategoryPackage = getRoleCategoryPackageForEmployee(employee.getId());
-
-        // Retrieve the expense limit for the category package
-        int maxExpenseLimit = roleCategoryPackage.getCategoryPackage().getExpenseLimit();
+        int maxExpenseLimit = categoryPackageRepository.findExpenseLimitByRoleAndCategory(employee.getRole().getId(), expense.getCategory().getId());
 
         // Calculate the sum of all approved expenses for this employee and category
-        int totalApprovedExpenses = expenseRepository.findTotalApprovedExpensesByEmployeeAndCategory(employee, roleCategoryPackage.getCategoryPackage().getCategory());
+        int totalApprovedExpenses = expenseRepository.findApprovedExpensesAmountByEmployeeAndCategory(employee, expense.getCategory());
 
         // Calculate the remaining amount
         int remainingAmount = maxExpenseLimit - totalApprovedExpenses;
@@ -164,7 +134,6 @@ private RoleCategoryPackage getRoleCategoryPackageForEmployee(int employeeId) {
                 })
                 .toList();
     }
-
 
     // validate expense limit by using
     public boolean validateExpenseLimit(int roleId, int categoryPackageId, int expenseAmount) {
