@@ -13,9 +13,9 @@ import java.util.List;
 
 @Repository
 public interface ExpenseRepository extends JpaRepository<Expense, Integer> {
-
     @Query("SELECT COALESCE(SUM(e.amount), 0) FROM Expense e WHERE e.employee = :employee AND e.category = :category AND e.status.name = 'Approved'")
-    int findTotalApprovedExpensesByEmployeeAndCategory(@Param("employee") Employee employee, @Param("category") Categories category);
+    int findApprovedExpensesAmountByEmployeeAndCategory(@Param("employee") Employee employee, @Param("category") Categories category);
+
 
     // Get expense by it's status
     List<Expense> findByStatus_id(int id);
