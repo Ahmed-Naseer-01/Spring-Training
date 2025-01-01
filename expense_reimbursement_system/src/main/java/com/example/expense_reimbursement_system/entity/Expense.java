@@ -25,7 +25,6 @@ public class Expense {
 
     @ManyToOne
     @JoinColumn(name = "category_id")
-    @JsonIgnore
     private Categories category;
 
     @ManyToOne
